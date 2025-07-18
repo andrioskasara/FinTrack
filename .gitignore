@@ -1,0 +1,27 @@
+# IntelliJ IDEA project files
+.idea/
+*.iml
+*.iws
+
+# Maven / Gradle build folders (Spring Boot)
+backend/target/
+backend/build/
+
+# Logs
+*.log
+backend/logs/
+
+# Environment files
+*.env
+backend/.env
+frontend/.env
+
+# Node modules (React frontend)
+frontend/node_modules/
+
+# React build output
+frontend/build/
+
+# OS files
+.DS_Store
+Thumbs.db
