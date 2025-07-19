@@ -28,4 +28,7 @@
             </column>
         </createTable>
     </changeSet>
+
+    <include file="db/changelog/db.changelog-2-update-roles.xml"/>
+
 </databaseChangeLog>
