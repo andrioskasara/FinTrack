@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="4" author="andrioska" context="seed">
+
+        <!-- Expense categories -->
+        <insert tableName="categories">
+            <column name="id" value="00000000-0000-0000-0000-000000000001"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Uncategorized"/>
+            <column name="type" value="EXPENSE"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-default"/>
+            <column name="color_code" value="#cccccc"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Food &amp; Groceries"/>
+            <column name="type" value="EXPENSE"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-food"/>
+            <column name="color_code" value="#ffba08"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Rent"/>
+            <column name="type" value="EXPENSE"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-rent"/>
+            <column name="color_code" value="#48cae4"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Utilities"/>
+            <column name="type" value="EXPENSE"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-utilities"/>
+            <column name="color_code" value="#219ebc"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="44444444-4444-4444-4444-444444444444"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Health"/>
+            <column name="type" value="EXPENSE"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-health"/>
+            <column name="color_code" value="#8ac926"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="55555555-5555-5555-5555-555555555555"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Fitness &amp; Wellness"/>
+            <column name="type" value="EXPENSE"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-fitness"/>
+            <column name="color_code" value="#73d2de"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="66666666-6666-6666-6666-666666666666"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Education"/>
+            <column name="type" value="EXPENSE"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-education"/>
+            <column name="color_code" value="#ff1654"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="77777777-7777-7777-7777-777777777777"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Entertainment"/>
+            <column name="type" value="EXPENSE"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-entertainment"/>
+            <column name="color_code" value="#f94144"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="88888888-8888-8888-8888-888888888888"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Shopping"/>
+            <column name="type" value="EXPENSE"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-shopping"/>
+            <column name="color_code" value="#f3722c"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="99999999-9999-9999-9999-999999999999"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Personal Care"/>
+            <column name="type" value="EXPENSE"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-personal-care"/>
+            <column name="color_code" value="#f8961e"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Gifts"/>
+            <column name="type" value="EXPENSE"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-gifts"/>
+            <column name="color_code" value="#577590"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Donations"/>
+            <column name="type" value="EXPENSE"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-donations"/>
+            <column name="color_code" value="#43aa8b"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="cccccccc-cccc-cccc-cccc-cccccccccccc"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Insurance"/>
+            <column name="type" value="EXPENSE"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-insurance"/>
+            <column name="color_code" value="#720026"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="dddddddd-dddd-dddd-dddd-dddddddddddd"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Taxes"/>
+            <column name="type" value="EXPENSE"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-taxes"/>
+            <column name="color_code" value="#a41623"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Transport"/>
+            <column name="type" value="EXPENSE"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-transport"/>
+            <column name="color_code" value="#2b2d42"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="ffffffff-ffff-ffff-ffff-ffffffffffff"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Travel"/>
+            <column name="type" value="EXPENSE"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-travel"/>
+            <column name="color_code" value="#cdb30c"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="12345678-1234-1234-1234-123456789abc"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Other Expenses"/>
+            <column name="type" value="EXPENSE"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-other-expenses"/>
+            <column name="color_code" value="#6b4226"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <!-- Income categories -->
+        <insert tableName="categories">
+            <column name="id" value="00000000-0000-0000-0000-000000000002"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Uncategorized"/>
+            <column name="type" value="INCOME"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-default"/>
+            <column name="color_code" value="#cccccc"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="13579135-2468-1357-2468-135724681357"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Salary"/>
+            <column name="type" value="INCOME"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-salary"/>
+            <column name="color_code" value="#43aa8b"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="24681357-1357-2468-1357-246813571357"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Investments"/>
+            <column name="type" value="INCOME"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-investments"/>
+            <column name="color_code" value="#ffba08"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="35791357-2468-3579-2468-357913572468"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Gifts"/>
+            <column name="type" value="INCOME"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-gifts"/>
+            <column name="color_code" value="#577590"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="46802468-3579-4680-3579-468024683579"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Bonuses"/>
+            <column name="type" value="INCOME"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-bonuses"/>
+            <column name="color_code" value="#f94144"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="57913579-4680-5791-4680-579135794680"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Business"/>
+            <column name="type" value="INCOME"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-business"/>
+            <column name="color_code" value="#2b2d42"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="68024680-5791-6802-5791-680246805791"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Freelance"/>
+            <column name="type" value="INCOME"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-freelance"/>
+            <column name="color_code" value="#f8961e"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" value="79135791-6802-7913-6802-791357916802"/>
+            <column name="user_id" value="NULL"/>
+            <column name="name" value="Other Income"/>
+            <column name="type" value="INCOME"/>
+            <column name="predefined" valueBoolean="true"/>
+            <column name="icon" value="icon-other-income"/>
+            <column name="color_code" value="#6b4226"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+    </changeSet>
+</databaseChangeLog>
