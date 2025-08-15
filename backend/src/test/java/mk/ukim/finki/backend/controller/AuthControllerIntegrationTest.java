@@ -1,8 +1,8 @@
 package mk.ukim.finki.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import mk.ukim.finki.backend.model.dto.UserLoginDto;
-import mk.ukim.finki.backend.model.dto.UserRegistrationDto;
+import mk.ukim.finki.backend.model.dto.auth.UserLoginDto;
+import mk.ukim.finki.backend.model.dto.auth.UserRegistrationDto;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;

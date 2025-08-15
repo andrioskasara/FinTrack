@@ -2,9 +2,9 @@ package mk.ukim.finki.backend.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import mk.ukim.finki.backend.model.dto.AuthResponseDto;
-import mk.ukim.finki.backend.model.dto.UserLoginDto;
-import mk.ukim.finki.backend.model.dto.UserRegistrationDto;
+import mk.ukim.finki.backend.model.dto.auth.AuthResponseDto;
+import mk.ukim.finki.backend.model.dto.auth.UserLoginDto;
+import mk.ukim.finki.backend.model.dto.auth.UserRegistrationDto;
 import mk.ukim.finki.backend.model.entity.User;
 import mk.ukim.finki.backend.security.JwtTokenProvider;
 import mk.ukim.finki.backend.service.UserService;
@@ -14,6 +14,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * REST controller for user authentication.
+ * <p>
+ * Provides endpoints for user registration and login.
+ */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -23,12 +28,25 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
 
+    /**
+     * Registers a new user.
+     *
+     * @param dto the user registration data transfer object
+     * @return 200 OK with confirmation message
+     */
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody UserRegistrationDto dto) {
         User createdUser = userService.registerUser(dto);
         return ResponseEntity.ok("User registered with email: " + createdUser.getEmail());
     }
 
+    /**
+     * Authenticates a user and issues a JWT token.
+     *
+     * @param dto the login credentials
+     * @return 200 OK with AuthResponseDto containing token and expiry on success;
+     * 401 Unauthorized with message on failure
+     */
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody UserLoginDto dto) {
         try {
