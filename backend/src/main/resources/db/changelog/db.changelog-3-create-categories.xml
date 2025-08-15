@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!-- Create categories table -->
+    <changeSet id="3.1" author="andrioska">
+        <createTable tableName="categories">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="uuid"/>
+            <column name="name" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="predefined" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="icon" type="varchar(255)"/>
+            <column name="color_code" type="varchar(7)"/>
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint
+                tableName="categories"
+                columnNames="user_id, name, type"
+                constraintName="uq_categories_user_name_type"/>
+
+        <addForeignKeyConstraint
+                baseTableName="categories"
+                baseColumnNames="user_id"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                constraintName="fk_categories_user"/>
+    </changeSet>
+
+    <!-- Create hidden_categories table -->
+    <changeSet id="3.2" author="andrioska">
+        <createTable tableName="hidden_categories">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint
+                tableName="hidden_categories"
+                columnNames="user_id, category_id"
+                constraintName="uq_hidden_categories_user_category"/>
+
+        <addForeignKeyConstraint
+                baseTableName="hidden_categories"
+                baseColumnNames="user_id"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                constraintName="fk_hidden_categories_user"/>
+
+        <addForeignKeyConstraint
+                baseTableName="hidden_categories"
+                baseColumnNames="category_id"
+                referencedTableName="categories"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                constraintName="fk_hidden_categories_category"/>
+    </changeSet>
+</databaseChangeLog>

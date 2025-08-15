@@ -30,5 +30,7 @@
     </changeSet>
 
     <include file="db/changelog/db.changelog-2-update-roles.xml"/>
+    <include file="/db/changelog/db.changelog-3-create-categories.xml"/>
+    <include file="/db/changelog/db.changelog-4-system-categories.xml"/>
 
 </databaseChangeLog>
