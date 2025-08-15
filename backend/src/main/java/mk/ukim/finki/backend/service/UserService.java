@@ -1,46 +1,19 @@
 package mk.ukim.finki.backend.service;
 
-import lombok.RequiredArgsConstructor;
-import mk.ukim.finki.backend.exception.EmailAlreadyExistsException;
-import mk.ukim.finki.backend.model.dto.UserRegistrationDto;
+import mk.ukim.finki.backend.model.dto.auth.UserRegistrationDto;
 import mk.ukim.finki.backend.model.entity.User;
-import mk.ukim.finki.backend.model.enums.UserRole;
-import mk.ukim.finki.backend.repository.UserRepository;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
-@Service
-@RequiredArgsConstructor
-public class UserService implements UserDetailsService {
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+/**
+ * Service interface for user management and authentication.
+ */
+public interface UserService extends UserDetailsService {
 
-    public User registerUser(UserRegistrationDto registrationDto) {
-        if (userRepository.existsByEmail(registrationDto.getEmail())) {
-            throw new EmailAlreadyExistsException("Email is already in use.");
-        }
-
-        User user = User.builder()
-                .email(registrationDto.getEmail())
-                .password(passwordEncoder.encode(registrationDto.getPassword()))
-                .role(UserRole.USER)
-                .build();
-
-        return userRepository.save(user);
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
-
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail())
-                .password(user.getPassword())
-                .roles(user.getRole().name())
-                .build();
-    }
+    /**
+     * Registers a new user from registration DTO.
+     *
+     * @param registrationDto user registration details
+     * @return persisted User entity
+     */
+    User registerUser(UserRegistrationDto registrationDto);
 }

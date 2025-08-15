@@ -11,6 +11,13 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
+/**
+ * Spring Security configuration class.
+ * <p>
+ * Configures HTTP security to disable CSRF, enforce stateless sessions,
+ * and set route authorization rules.
+ * Adds JWT authentication filter before user/password filter.
+ */
 @Configuration
 public class SecurityConfig {
 
@@ -20,6 +27,13 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
+    /**
+     * Configures the security filter chain.
+     *
+     * @param http HttpSecurity builder
+     * @return configured SecurityFilterChain
+     * @throws Exception if configuration fails
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -34,6 +48,13 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Exposes the AuthenticationManager bean.
+     *
+     * @param authenticationConfiguration the authentication configuration
+     * @return the AuthenticationManager
+     * @throws Exception if unable to get the manager
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();

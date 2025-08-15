@@ -1,10 +1,11 @@
 package mk.ukim.finki.backend.service;
 
 import mk.ukim.finki.backend.exception.EmailAlreadyExistsException;
-import mk.ukim.finki.backend.model.dto.UserRegistrationDto;
+import mk.ukim.finki.backend.model.dto.auth.UserRegistrationDto;
 import mk.ukim.finki.backend.model.entity.User;
 import mk.ukim.finki.backend.model.enums.UserRole;
 import mk.ukim.finki.backend.repository.UserRepository;
+import mk.ukim.finki.backend.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -20,7 +21,7 @@ public class UserServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
     @InjectMocks
-    private UserService userService;
+    private UserServiceImpl userService;
 
     public UserServiceTest() {
         MockitoAnnotations.openMocks(this);

@@ -1,4 +1,4 @@
-package mk.ukim.finki.backend.model.dto;
+package mk.ukim.finki.backend.model.dto.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -6,6 +6,9 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+/**
+ * DTO representing user registration data.
+ */
 @Data
 public class UserRegistrationDto {
 
