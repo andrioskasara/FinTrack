@@ -12,10 +12,13 @@ import mk.ukim.finki.backend.model.dto.category.UpdateCategoryRequest;
 import mk.ukim.finki.backend.model.entity.Category;
 import mk.ukim.finki.backend.model.entity.HiddenCategory;
 import mk.ukim.finki.backend.model.entity.User;
+import mk.ukim.finki.backend.model.entity.Expense;
 import mk.ukim.finki.backend.model.enums.CategoryType;
 import mk.ukim.finki.backend.repository.CategoryRepository;
 import mk.ukim.finki.backend.repository.HiddenCategoryRepository;
 import mk.ukim.finki.backend.repository.UserRepository;
+import mk.ukim.finki.backend.repository.ExpenseRepository;
+import mk.ukim.finki.backend.repository.IncomeRepository;
 import mk.ukim.finki.backend.service.impl.CategoryServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,6 +50,10 @@ class CategoryServiceTest {
     HiddenCategoryRepository hiddenCategoryRepository;
     @Mock
     UserRepository userRepository;
+    @Mock
+    ExpenseRepository expenseRepository;
+    @Mock
+    IncomeRepository incomeRepository;
     @Mock
     CategoryMapper categoryMapper;
     @InjectMocks
@@ -281,6 +288,38 @@ class CategoryServiceTest {
         categoryService.deleteCategory(id);
 
         verify(categoryRepository).delete(category);
+    }
+
+    @Test
+    void deleteCategory_success_reassignsTransactions() {
+        UUID categoryId = UUID.randomUUID();
+        Category category = customCategory(categoryId);
+
+        Category fallback = systemCategory(FALLBACK_EXPENSE_ID);
+
+        Expense expense1 = Expense.builder()
+                .id(UUID.randomUUID())
+                .category(category)
+                .build();
+        Expense expense2 = Expense.builder()
+                .id(UUID.randomUUID())
+                .category(category)
+                .build();
+
+        when(categoryRepository.findById(categoryId))
+
+                .thenReturn(Optional.of(category));
+        when(categoryRepository.findById(FALLBACK_EXPENSE_ID))
+                .thenReturn(Optional.of(fallback));
+        when(expenseRepository.findAllByCategory_Id(categoryId))
+                .thenReturn(List.of(expense1, expense2));
+
+        categoryService.deleteCategory(categoryId);
+
+        verify(categoryRepository).delete(category);
+
+        assertThat(expense1.getCategory().getId()).isEqualTo(fallback.getId());
+        assertThat(expense2.getCategory().getId()).isEqualTo(fallback.getId());
     }
 
     @Test
