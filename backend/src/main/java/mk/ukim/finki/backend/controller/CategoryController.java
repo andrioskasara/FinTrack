@@ -8,6 +8,7 @@ import mk.ukim.finki.backend.model.dto.category.HideCategoryRequest;
 import mk.ukim.finki.backend.model.dto.category.UpdateCategoryRequest;
 import mk.ukim.finki.backend.model.enums.CategoryType;
 import mk.ukim.finki.backend.service.CategoryService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,7 +46,8 @@ public class CategoryController {
      */
     @PostMapping
     public ResponseEntity<CategoryDto> create(@Valid @RequestBody CreateCategoryRequest request) {
-        return ResponseEntity.ok(categoryService.createCategory(request));
+        CategoryDto dto = categoryService.createCategory(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
     /**
