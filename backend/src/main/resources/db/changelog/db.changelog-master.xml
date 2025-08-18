@@ -32,5 +32,7 @@
     <include file="db/changelog/db.changelog-2-update-roles.xml"/>
     <include file="/db/changelog/db.changelog-3-create-categories.xml"/>
     <include file="/db/changelog/db.changelog-4-system-categories.xml"/>
+    <include file="/db/changelog/db.changelog-5-create-expenses.xml"/>
+    <include file="/db/changelog/db.changelog-6-create-incomes.xml"/>
 
 </databaseChangeLog>
