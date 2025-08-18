@@ -18,6 +18,8 @@ import mk.ukim.finki.backend.model.enums.CategoryType;
 import mk.ukim.finki.backend.repository.CategoryRepository;
 import mk.ukim.finki.backend.repository.HiddenCategoryRepository;
 import mk.ukim.finki.backend.repository.UserRepository;
+import mk.ukim.finki.backend.repository.ExpenseRepository;
+import mk.ukim.finki.backend.repository.IncomeRepository;
 import mk.ukim.finki.backend.service.CategoryService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -39,6 +41,8 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final HiddenCategoryRepository hiddenCategoryRepository;
     private final UserRepository userRepository;
+    private final ExpenseRepository expenseRepository;
+    private final IncomeRepository incomeRepository;
     private final CategoryMapper categoryMapper;
 
     private static final UUID FALLBACK_EXPENSE_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
@@ -146,8 +150,19 @@ public class CategoryServiceImpl implements CategoryService {
         Category fallback = categoryRepository.findById(fallbackId)
                 .orElseThrow(() -> new EntityNotFoundException(FALLBACK_NOT_FOUND));
 
-
-        // todo in the next feature implementation: reassign all related transactions to the fallback category
+        if (category.getType() == CategoryType.EXPENSE) {
+            expenseRepository.findAllByCategory_Id(category.getId())
+                    .forEach(expense -> {
+                        expense.setCategory(fallback);
+                        expenseRepository.save(expense);
+                    });
+        } else if (category.getType() == CategoryType.INCOME) {
+            incomeRepository.findAllByCategory_Id(category.getId())
+                    .forEach(income -> {
+                        income.setCategory(fallback);
+                        incomeRepository.save(income);
+                    });
+        }
 
         categoryRepository.delete(category);
 
