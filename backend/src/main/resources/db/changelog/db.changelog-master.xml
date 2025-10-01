@@ -34,5 +34,7 @@
     <include file="/db/changelog/db.changelog-4-system-categories.xml"/>
     <include file="/db/changelog/db.changelog-5-create-expenses.xml"/>
     <include file="/db/changelog/db.changelog-6-create-incomes.xml"/>
+    <include file="/db/changelog/db.changelog-7-create-budgets.xml"/>
+    <include file="/db/changelog/db.changelog-8-create-saving-goals.xml"/>
 
 </databaseChangeLog>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+          http://www.liquibase.org/xml/ns/dbchangelog
+          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="8" author="andrioska">
+        <createTable tableName="saving_goals">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="user_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="target_amount" type="decimal(10,2)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="current_amount" type="decimal(10,2)" defaultValueNumeric="0.00">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="deadline" type="date"/>
+
+            <column name="achieved" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="saving_goals"
+                baseColumnNames="user_id"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                constraintName="fk_saving_goals_user"/>
+    </changeSet>
+
+    <changeSet id="9" author="andrioska">
+        <createTable tableName="goal_contributions">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="saving_goal_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="decimal(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="goal_contributions"
+                baseColumnNames="saving_goal_id"
+                referencedTableName="saving_goals"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                constraintName="fk_goalcontrib_savinggoal"/>
+    </changeSet>
+</databaseChangeLog>
