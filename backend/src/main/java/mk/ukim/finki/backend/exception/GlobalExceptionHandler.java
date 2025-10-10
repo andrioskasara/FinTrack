@@ -6,7 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.validation.BindException;
 
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -74,6 +77,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UnauthorizedSavingGoalAccessException.class)
     public ResponseEntity<?> handleUnauthorizedSavingGoal(UnauthorizedSavingGoalAccessException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    }
+
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class, BindException.class, DateTimeParseException.class})
+    public ResponseEntity<String> handleInvalidParams(Exception ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid parameter format: " + ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
