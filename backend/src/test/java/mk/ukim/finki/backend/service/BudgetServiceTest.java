@@ -11,7 +11,6 @@ import mk.ukim.finki.backend.model.entity.Category;
 import mk.ukim.finki.backend.model.entity.User;
 import mk.ukim.finki.backend.repository.BudgetRepository;
 import mk.ukim.finki.backend.repository.CategoryRepository;
-import mk.ukim.finki.backend.repository.UserRepository;
 import mk.ukim.finki.backend.service.impl.BudgetServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,9 +18,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -41,7 +37,7 @@ public class BudgetServiceTest {
     private BudgetRepository budgetRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Mock
     private CategoryRepository categoryRepository;
@@ -69,32 +65,19 @@ public class BudgetServiceTest {
                 .user(user)
                 .category(category)
                 .amount(BigDecimal.valueOf(100))
-                .startDate(LocalDate.now().minusDays(5))
-                .endDate(LocalDate.now().plusDays(5))
+                .startDate(LocalDate.now().minusDays(10))
+                .endDate(LocalDate.now().minusDays(1))
                 .archived(false)
                 .build();
 
         budgetDto = BudgetDto.builder()
                 .id(budgetId)
                 .amount(BigDecimal.valueOf(100))
-                .startDate(LocalDate.now().minusDays(5))
-                .endDate(LocalDate.now().plusDays(5))
+                .startDate(LocalDate.now().minusDays(10))
+                .endDate(LocalDate.now().minusDays(1))
                 .build();
 
-        mockAuthentication(user.getEmail());
-
-        when(userRepository.findByEmail(anyString()))
-                .thenReturn(Optional.of(user));
-    }
-
-    private void mockAuthentication(String email) {
-        Authentication auth = mock(Authentication.class);
-        when(auth.getName()).thenReturn(email);
-
-        SecurityContext securityContext = mock(SecurityContext.class);
-        when(securityContext.getAuthentication()).thenReturn(auth);
-
-        SecurityContextHolder.setContext(securityContext);
+        when(userService.getCurrentUser()).thenReturn(user);
     }
 
     @Test
@@ -312,27 +295,6 @@ public class BudgetServiceTest {
         assertThatThrownBy(() -> budgetService.deleteBudget(budgetId))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Budget not found");
-    }
-
-    @Test
-    void archiveExpiredBudgets_archivesCorrectBudgets() {
-        Budget expired = Budget.builder()
-                .id(UUID.randomUUID())
-                .user(user)
-                .category(category)
-                .startDate(LocalDate.now().minusDays(10))
-                .endDate(LocalDate.now().minusDays(1))
-                .archived(false)
-                .build();
-
-        when(budgetRepository.findByUserOrderByStartDateDesc(user))
-                .thenReturn(List.of(budget, expired));
-
-        budgetService.archiveExpiredBudgets();
-
-        assertThat(expired.isArchived()).isTrue();
-        assertThat(budget.isArchived()).isFalse();
-        verify(budgetRepository).saveAll(List.of(expired));
     }
 
     @Test

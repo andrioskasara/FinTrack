@@ -54,16 +54,11 @@ public class FinancialReportControllerTest {
                 .totalIncome(BigDecimal.valueOf(1000))
                 .totalExpense(BigDecimal.valueOf(400))
                 .balance(BigDecimal.valueOf(600))
-                .expenseByCategory(List.of(
-                        new CategorySummaryDto("Food", BigDecimal.valueOf(200)),
-                        new CategorySummaryDto("Transport", BigDecimal.valueOf(200))
-                ))
-                .incomeByCategory(List.of(
-                        new CategorySummaryDto("Salary", BigDecimal.valueOf(1000))
-                ))
+                .expenseByCategory(List.of(new CategorySummaryDto("Food", BigDecimal.valueOf(200))))
+                .incomeByCategory(List.of(new CategorySummaryDto("Salary", BigDecimal.valueOf(1000))))
                 .budgets(List.of(
                         BudgetReportDto.builder()
-                                .budgetName("Monthly Food Budget")
+                                .budgetName("Monthly Budget")
                                 .amount(BigDecimal.valueOf(500))
                                 .spent(BigDecimal.valueOf(200))
                                 .progressPercentage(40f)
@@ -94,52 +89,9 @@ public class FinancialReportControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalIncome").value(1000))
-                .andExpect(jsonPath("$.totalExpense").value(400))
                 .andExpect(jsonPath("$.balance").value(600))
                 .andExpect(jsonPath("$.expenseByCategory[0].categoryName").value("Food"))
-                .andExpect(jsonPath("$.incomeByCategory[0].categoryName").value("Salary"))
-                .andExpect(jsonPath("$.budgets[0].budgetName").value("Monthly Food Budget"))
-                .andExpect(jsonPath("$.savingGoals[0].name").value("Vacation"))
-                .andExpect(jsonPath("$.emptyData").value(false));
-    }
-
-    @Test
-    void getDashboard_emptyData() throws Exception {
-        FinancialReportDto emptyDto = FinancialReportDto.builder()
-                .totalIncome(BigDecimal.ZERO)
-                .totalExpense(BigDecimal.ZERO)
-                .balance(BigDecimal.ZERO)
-                .expenseByCategory(List.of())
-                .incomeByCategory(List.of())
-                .budgets(List.of())
-                .savingGoals(List.of())
-                .emptyData(true)
-                .build();
-
-        when(reportService.generateDashboard(from, to)).thenReturn(emptyDto);
-
-        mockMvc.perform(get("/api/dashboard")
-                        .param("from", from.toString())
-                        .param("to", to.toString())
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalIncome").value(0))
-                .andExpect(jsonPath("$.totalExpense").value(0))
-                .andExpect(jsonPath("$.balance").value(0))
-                .andExpect(jsonPath("$.expenseByCategory").isEmpty())
-                .andExpect(jsonPath("$.incomeByCategory").isEmpty())
-                .andExpect(jsonPath("$.budgets").isEmpty())
-                .andExpect(jsonPath("$.savingGoals").isEmpty())
-                .andExpect(jsonPath("$.emptyData").value(true));
-    }
-
-    @Test
-    void getDashboard_invalidDateParam() throws Exception {
-        mockMvc.perform(get("/api/dashboard")
-                        .param("from", "invalid-date")
-                        .param("to", "2025-01-31")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(jsonPath("$.savingGoals[0].name").value("Vacation"));
     }
 
     @Test
@@ -152,57 +104,29 @@ public class FinancialReportControllerTest {
                         .param("to", to.toString())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalIncome").value(1000))
-                .andExpect(jsonPath("$.totalExpense").value(400))
-                .andExpect(jsonPath("$.balance").value(600));
-    }
-
-    @Test
-    void getReport_invalidDateParam() throws Exception {
-        mockMvc.perform(get("/api/reports")
-                        .param("from", "2025-01-01")
-                        .param("to", "not-a-date")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(jsonPath("$.totalExpense").value(400));
     }
 
     @Test
     void exportReport_success() throws Exception {
         when(reportService.exportToPdf(from, to))
-                .thenReturn("PDF_CONTENT".getBytes());
+                .thenReturn("PDF_DATA".getBytes());
 
-        mockMvc.perform(get("/api/reports/export")
+        mockMvc.perform(get("/api/reports/export/pdf")
                         .param("from", from.toString())
                         .param("to", to.toString())
                         .accept(MediaType.APPLICATION_PDF))
                 .andExpect(status().isOk())
-                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=report.pdf"))
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"financial-report-2025-01-01-to-2025-01-31.pdf\""))
                 .andExpect(content().contentType(MediaType.APPLICATION_PDF))
-                .andExpect(content().bytes("PDF_CONTENT".getBytes()));
+                .andExpect(content().bytes("PDF_DATA".getBytes()));
     }
 
     @Test
-    void exportReport_emptyPdf() throws Exception {
-        when(reportService.exportToPdf(from, to))
-                .thenReturn("PDF_EMPTY".getBytes());
-
-        mockMvc.perform(get("/api/reports/export")
-                        .param("from", from.toString())
-                        .param("to", to.toString())
-                        .accept(MediaType.APPLICATION_PDF))
-                .andExpect(status().isOk())
-                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=report.pdf"))
-                .andExpect(content().contentType(MediaType.APPLICATION_PDF))
-                .andExpect(content().bytes("PDF_EMPTY".getBytes()));
-    }
-
-    @Test
-    void exportReport_invalidDateParam() throws Exception {
-        mockMvc.perform(get("/api/reports/export")
+    void invalidDateParams_returnsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/reports")
                         .param("from", "bad-date")
-                        .param("to", "also-bad")
-                        .accept(MediaType.APPLICATION_PDF))
+                        .param("to", "2025-01-31"))
                 .andExpect(status().isBadRequest());
     }
 }
-

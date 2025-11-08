@@ -10,8 +10,8 @@ import mk.ukim.finki.backend.model.entity.Expense;
 import mk.ukim.finki.backend.model.entity.User;
 import mk.ukim.finki.backend.repository.CategoryRepository;
 import mk.ukim.finki.backend.repository.ExpenseRepository;
-import mk.ukim.finki.backend.repository.UserRepository;
 import mk.ukim.finki.backend.service.ExpenseService;
+import mk.ukim.finki.backend.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,17 +32,18 @@ public class ExpenseServiceImpl extends AbstractTransactionService<Expense> impl
     private final ExpenseMapper expenseMapper;
 
     public ExpenseServiceImpl(ExpenseRepository expenseRepository,
-                              UserRepository userRepository,
                               CategoryRepository categoryRepository,
-                              ExpenseMapper expenseMapper) {
-        super(userRepository, categoryRepository);
+                              ExpenseMapper expenseMapper,
+                              UserService userService) {
+        super(categoryRepository, userService);
         this.expenseRepository = expenseRepository;
         this.expenseMapper = expenseMapper;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ExpenseDto> getAll() {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         List<Expense> expenses = expenseRepository.findAllByUser_IdOrderByDateDescCreatedAtDesc(user.getId());
 
         return expenses.stream()
@@ -51,8 +52,9 @@ public class ExpenseServiceImpl extends AbstractTransactionService<Expense> impl
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ExpenseDto getById(UUID id) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         Expense expense = expenseRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(EXPENSE_NOT_FOUND));
         validateOwnership(expense, user);
@@ -62,7 +64,7 @@ public class ExpenseServiceImpl extends AbstractTransactionService<Expense> impl
     @Override
     @Transactional
     public ExpenseDto create(ExpenseRequest request) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         Category category = findCategoryOrThrow(request.getCategoryId());
         validateCategoryOwnership(category, user);
 
@@ -85,7 +87,7 @@ public class ExpenseServiceImpl extends AbstractTransactionService<Expense> impl
     @Override
     @Transactional
     public ExpenseDto update(UUID id, ExpenseRequest request) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         Expense expense = expenseRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(EXPENSE_NOT_FOUND));
         validateOwnership(expense, user);
@@ -109,7 +111,7 @@ public class ExpenseServiceImpl extends AbstractTransactionService<Expense> impl
     @Override
     @Transactional
     public void delete(UUID id) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         Expense expense = expenseRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(EXPENSE_NOT_FOUND));
         validateOwnership(expense, user);

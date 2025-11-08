@@ -12,11 +12,9 @@ import mk.ukim.finki.backend.model.dto.category.UpdateCategoryRequest;
 import mk.ukim.finki.backend.model.entity.Category;
 import mk.ukim.finki.backend.model.entity.HiddenCategory;
 import mk.ukim.finki.backend.model.entity.User;
-import mk.ukim.finki.backend.model.entity.Expense;
 import mk.ukim.finki.backend.model.enums.CategoryType;
 import mk.ukim.finki.backend.repository.CategoryRepository;
 import mk.ukim.finki.backend.repository.HiddenCategoryRepository;
-import mk.ukim.finki.backend.repository.UserRepository;
 import mk.ukim.finki.backend.repository.ExpenseRepository;
 import mk.ukim.finki.backend.repository.IncomeRepository;
 import mk.ukim.finki.backend.service.impl.CategoryServiceImpl;
@@ -26,9 +24,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.*;
 
@@ -38,8 +33,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,7 +42,7 @@ class CategoryServiceTest {
     @Mock
     HiddenCategoryRepository hiddenCategoryRepository;
     @Mock
-    UserRepository userRepository;
+    UserService userService;
     @Mock
     ExpenseRepository expenseRepository;
     @Mock
@@ -69,19 +62,8 @@ class CategoryServiceTest {
         userId = UUID.randomUUID();
         user = User.builder().id(userId).email("test@test.com").build();
         dto = new CategoryDto();
-        mockAuth(user.getEmail());
 
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
-    }
-
-    private void mockAuth(String email) {
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getName()).thenReturn(email);
-
-        SecurityContext context = mock(SecurityContext.class);
-        when(context.getAuthentication()).thenReturn(authentication);
-
-        SecurityContextHolder.setContext(context);
+        when(userService.getCurrentUser()).thenReturn(user);
     }
 
     private Category customCategory(UUID id) {
@@ -294,32 +276,17 @@ class CategoryServiceTest {
     void deleteCategory_success_reassignsTransactions() {
         UUID categoryId = UUID.randomUUID();
         Category category = customCategory(categoryId);
-
         Category fallback = systemCategory(FALLBACK_EXPENSE_ID);
 
-        Expense expense1 = Expense.builder()
-                .id(UUID.randomUUID())
-                .category(category)
-                .build();
-        Expense expense2 = Expense.builder()
-                .id(UUID.randomUUID())
-                .category(category)
-                .build();
-
         when(categoryRepository.findById(categoryId))
-
                 .thenReturn(Optional.of(category));
         when(categoryRepository.findById(FALLBACK_EXPENSE_ID))
                 .thenReturn(Optional.of(fallback));
-        when(expenseRepository.findAllByCategory_Id(categoryId))
-                .thenReturn(List.of(expense1, expense2));
 
         categoryService.deleteCategory(categoryId);
 
+        verify(expenseRepository).reassignCategory(categoryId, fallback);
         verify(categoryRepository).delete(category);
-
-        assertThat(expense1.getCategory().getId()).isEqualTo(fallback.getId());
-        assertThat(expense2.getCategory().getId()).isEqualTo(fallback.getId());
     }
 
     @Test

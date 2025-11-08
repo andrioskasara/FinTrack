@@ -10,12 +10,24 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class AuthResponseDto {
+
     /**
      * JWT token issued to the user.
      */
     private String token;
+
     /**
      * Expiration time of the token in milliseconds.
      */
     private long expiresIn;
+
+    /**
+     * Email of the authenticated user.
+     */
+    private String email;
+
+    /**
+     * Role of the authenticated user.
+     */
+    private String role;
 }

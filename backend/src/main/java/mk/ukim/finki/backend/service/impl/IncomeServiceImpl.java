@@ -10,8 +10,8 @@ import mk.ukim.finki.backend.model.entity.Income;
 import mk.ukim.finki.backend.model.entity.User;
 import mk.ukim.finki.backend.repository.CategoryRepository;
 import mk.ukim.finki.backend.repository.IncomeRepository;
-import mk.ukim.finki.backend.repository.UserRepository;
 import mk.ukim.finki.backend.service.IncomeService;
+import mk.ukim.finki.backend.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,17 +32,18 @@ public class IncomeServiceImpl extends AbstractTransactionService<Income> implem
     private final IncomeMapper incomeMapper;
 
     public IncomeServiceImpl(IncomeRepository incomeRepository,
-                             UserRepository userRepository,
                              CategoryRepository categoryRepository,
-                             IncomeMapper incomeMapper) {
-        super(userRepository, categoryRepository);
+                             IncomeMapper incomeMapper,
+                             UserService userService) {
+        super(categoryRepository, userService);
         this.incomeRepository = incomeRepository;
         this.incomeMapper = incomeMapper;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<IncomeDto> getAll() {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         List<Income> incomes = incomeRepository.findAllByUser_IdOrderByDateDescCreatedAtDesc(user.getId());
 
         return incomes.stream()
@@ -51,8 +52,9 @@ public class IncomeServiceImpl extends AbstractTransactionService<Income> implem
     }
 
     @Override
+    @Transactional(readOnly = true)
     public IncomeDto getById(UUID id) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         Income income = incomeRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(INCOME_NOT_FOUND));
         validateOwnership(income, user);
@@ -62,7 +64,7 @@ public class IncomeServiceImpl extends AbstractTransactionService<Income> implem
     @Override
     @Transactional
     public IncomeDto create(IncomeRequest request) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
 
         Category category = findCategoryOrThrow(request.getCategoryId());
         validateCategoryOwnership(category, user);
@@ -86,7 +88,7 @@ public class IncomeServiceImpl extends AbstractTransactionService<Income> implem
     @Override
     @Transactional
     public IncomeDto update(UUID id, IncomeRequest request) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         Income income = incomeRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(INCOME_NOT_FOUND));
         validateOwnership(income, user);
@@ -110,7 +112,7 @@ public class IncomeServiceImpl extends AbstractTransactionService<Income> implem
     @Override
     @Transactional
     public void delete(UUID id) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         Income income = incomeRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(INCOME_NOT_FOUND));
         validateOwnership(income, user);

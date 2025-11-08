@@ -7,9 +7,7 @@ import mk.ukim.finki.backend.model.entity.Category;
 import mk.ukim.finki.backend.model.entity.TransactionBase;
 import mk.ukim.finki.backend.model.entity.User;
 import mk.ukim.finki.backend.repository.CategoryRepository;
-import mk.ukim.finki.backend.repository.UserRepository;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import mk.ukim.finki.backend.service.UserService;
 
 import java.util.UUID;
 
@@ -23,15 +21,8 @@ import static mk.ukim.finki.backend.util.TransactionServiceMessages.*;
 @RequiredArgsConstructor
 public abstract class AbstractTransactionService<T extends TransactionBase> {
 
-    protected final UserRepository userRepository;
     protected final CategoryRepository categoryRepository;
-
-    protected User getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName();
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND));
-    }
+    protected final UserService userService;
 
     protected void validateCategoryOwnership(Category category, User user) {
         if (category.isPredefined()) return;

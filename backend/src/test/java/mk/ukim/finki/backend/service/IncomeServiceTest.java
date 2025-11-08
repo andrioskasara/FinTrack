@@ -11,7 +11,6 @@ import mk.ukim.finki.backend.model.entity.User;
 import mk.ukim.finki.backend.model.enums.CategoryType;
 import mk.ukim.finki.backend.repository.CategoryRepository;
 import mk.ukim.finki.backend.repository.IncomeRepository;
-import mk.ukim.finki.backend.repository.UserRepository;
 import mk.ukim.finki.backend.service.impl.IncomeServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,9 +18,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -40,7 +36,7 @@ class IncomeServiceTest {
     @Mock
     private IncomeRepository incomeRepository;
     @Mock
-    private UserRepository userRepository;
+    private UserService userService;
     @Mock
     private CategoryRepository categoryRepository;
     @Mock
@@ -64,9 +60,7 @@ class IncomeServiceTest {
                 .build();
         incomeId = UUID.randomUUID();
 
-        mockAuth(user.getEmail());
-        when(userRepository.findByEmail(anyString()))
-                .thenReturn(Optional.of(user));
+        when(userService.getCurrentUser()).thenReturn(user);
 
         Category category = customCategory(UUID.randomUUID());
         income = createIncome(incomeId, user, category);
@@ -74,16 +68,6 @@ class IncomeServiceTest {
                 .id(incomeId)
                 .amount(income.getAmount())
                 .build();
-    }
-
-    private void mockAuth(String email) {
-        Authentication auth = mock(Authentication.class);
-        when(auth.getName()).thenReturn(email);
-
-        SecurityContext ctx = mock(SecurityContext.class);
-        when(ctx.getAuthentication()).thenReturn(auth);
-
-        SecurityContextHolder.setContext(ctx);
     }
 
     private Income createIncome(UUID id, User u, Category c) {
