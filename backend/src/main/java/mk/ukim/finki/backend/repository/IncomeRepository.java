@@ -1,13 +1,17 @@
 package mk.ukim.finki.backend.repository;
 
 import mk.ukim.finki.backend.model.dto.report.CategorySummaryDto;
+import mk.ukim.finki.backend.model.dto.report.MonthlyTrendProjection;
+import mk.ukim.finki.backend.model.entity.Category;
 import mk.ukim.finki.backend.model.entity.Income;
 import mk.ukim.finki.backend.model.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -66,4 +70,53 @@ public interface IncomeRepository extends JpaRepository<Income, UUID> {
                                            @Param("from") LocalDate from,
                                            @Param("to") LocalDate to);
 
+    /**
+     * Bulk reassigns all incomes from one category to another.
+     * <p>
+     * This is used when a custom category is deleted to reassign all associated
+     * transactions to a fallback category (typically "Uncategorized").
+     * <p>
+     *
+     * @param oldCategoryId the ID of the category being deleted
+     * @param newCategory   the fallback category to reassign incomes to
+     */
+    @Modifying
+    @Query("UPDATE Income i SET i.category = :newCategory WHERE i.category.id = :oldCategoryId")
+    void reassignCategory(@Param("oldCategoryId") UUID oldCategoryId,
+                          @Param("newCategory") Category newCategory);
+
+    /**
+     * Calculates total income amount for a user within a date range.
+     *
+     * @param user the user
+     * @param from start date (inclusive)
+     * @param to   end date (inclusive)
+     * @return total income amount, zero if no incomes found
+     */
+    @Query("SELECT COALESCE(SUM(i.amount), 0) FROM Income i WHERE i.user = :user AND i.date BETWEEN :from AND :to")
+    BigDecimal sumAmountByUserAndDateRange(@Param("user") User user,
+                                           @Param("from") LocalDate from,
+                                           @Param("to") LocalDate to);
+
+    /**
+     * Finds monthly income trends for a user within a date range.
+     *
+     * @param user the user
+     * @param from start date (inclusive)
+     * @param to   end date (inclusive)
+     * @return list of monthly trend projections
+     */
+    @Query("""
+            SELECT 
+                YEAR(i.date) AS year,
+                MONTH(i.date) AS month,
+                SUM(i.amount) AS totalAmount
+            FROM Income i
+            WHERE i.user = :user AND i.date BETWEEN :from AND :to
+            GROUP BY YEAR(i.date), MONTH(i.date)
+            ORDER BY YEAR(i.date), MONTH(i.date)
+            """)
+    List<MonthlyTrendProjection> findMonthlyIncomeTrends(@Param("user") User user,
+                                                         @Param("from") LocalDate from,
+                                                         @Param("to") LocalDate to);
 }

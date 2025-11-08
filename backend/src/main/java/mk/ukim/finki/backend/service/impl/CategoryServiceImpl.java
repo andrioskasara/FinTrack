@@ -17,13 +17,10 @@ import mk.ukim.finki.backend.model.entity.User;
 import mk.ukim.finki.backend.model.enums.CategoryType;
 import mk.ukim.finki.backend.repository.CategoryRepository;
 import mk.ukim.finki.backend.repository.HiddenCategoryRepository;
-import mk.ukim.finki.backend.repository.UserRepository;
 import mk.ukim.finki.backend.repository.ExpenseRepository;
 import mk.ukim.finki.backend.repository.IncomeRepository;
 import mk.ukim.finki.backend.service.CategoryService;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import mk.ukim.finki.backend.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,21 +37,13 @@ import static mk.ukim.finki.backend.util.CategoryServiceMessages.*;
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final HiddenCategoryRepository hiddenCategoryRepository;
-    private final UserRepository userRepository;
     private final ExpenseRepository expenseRepository;
     private final IncomeRepository incomeRepository;
     private final CategoryMapper categoryMapper;
+    private final UserService userService;
 
     private static final UUID FALLBACK_EXPENSE_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID FALLBACK_INCOME_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
-
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException(email));
-    }
 
     private Category findCategoryOrThrow(UUID id) {
         return categoryRepository.findById(id)
@@ -71,9 +60,10 @@ public class CategoryServiceImpl implements CategoryService {
         return (type == CategoryType.EXPENSE) ? FALLBACK_EXPENSE_ID : FALLBACK_INCOME_ID;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<CategoryDto> getAllCategories(CategoryType type) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
 
         Set<UUID> hiddenCategoriesIds = hiddenCategoryRepository.findByUser_Id(user.getId())
                 .stream()
@@ -91,7 +81,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     @Override
     public CategoryDto createCategory(CreateCategoryRequest request) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         String name = request.getName().trim();
 
         if (categoryRepository.existsByUser_IdAndNameIgnoreCaseAndType(user.getId(), name, request.getType()))
@@ -116,7 +106,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     @Override
     public CategoryDto updateCategory(UUID id, UpdateCategoryRequest request) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         String name = request.getName().trim();
         Category category = findCategoryOrThrow(id);
 
@@ -141,7 +131,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     @Override
     public void deleteCategory(UUID id) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         Category category = findCategoryOrThrow(id);
         assertOwnership(category, user);
 
@@ -151,17 +141,9 @@ public class CategoryServiceImpl implements CategoryService {
                 .orElseThrow(() -> new EntityNotFoundException(FALLBACK_NOT_FOUND));
 
         if (category.getType() == CategoryType.EXPENSE) {
-            expenseRepository.findAllByCategory_Id(category.getId())
-                    .forEach(expense -> {
-                        expense.setCategory(fallback);
-                        expenseRepository.save(expense);
-                    });
+            expenseRepository.reassignCategory(category.getId(), fallback);
         } else if (category.getType() == CategoryType.INCOME) {
-            incomeRepository.findAllByCategory_Id(category.getId())
-                    .forEach(income -> {
-                        income.setCategory(fallback);
-                        incomeRepository.save(income);
-                    });
+            incomeRepository.reassignCategory(category.getId(), fallback);
         }
 
         categoryRepository.delete(category);
@@ -174,7 +156,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     @Override
     public void hideCategory(HideCategoryRequest request) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         Category category = findCategoryOrThrow(request.getCategoryId());
 
         if (!category.isPredefined())
@@ -196,7 +178,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     @Override
     public void unhideCategory(UUID hiddenCategoryId) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
 
         HiddenCategory hiddenCategory = hiddenCategoryRepository.findById(hiddenCategoryId)
                 .orElseThrow(() -> new EntityNotFoundException(HIDDEN_CATEGORY_NOT_FOUND));

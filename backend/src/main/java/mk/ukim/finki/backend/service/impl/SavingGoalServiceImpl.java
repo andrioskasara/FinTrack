@@ -13,11 +13,8 @@ import mk.ukim.finki.backend.model.entity.User;
 import mk.ukim.finki.backend.model.enums.GoalContributionType;
 import mk.ukim.finki.backend.repository.GoalContributionRepository;
 import mk.ukim.finki.backend.repository.SavingGoalRepository;
-import mk.ukim.finki.backend.repository.UserRepository;
 import mk.ukim.finki.backend.service.SavingGoalService;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import mk.ukim.finki.backend.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,28 +35,17 @@ public class SavingGoalServiceImpl implements SavingGoalService {
 
     private final SavingGoalRepository savingGoalRepository;
     private final GoalContributionRepository goalContributionRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final SavingGoalMapper savingGoalMapper;
     private final GoalContributionMapper goalContributionMapper;
 
     /**
-     * Retrieves the currently authenticated user.
-     *
-     * @return the User entity
-     */
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException(email));
-    }
-
-    /**
      * Validates business rules for updating a saving goal.
+     * Ensures the new target amount is not less than the already saved amount.
      *
-     * @param request update request
-     * @param current current saving goal
+     * @param request update request containing new target amount
+     * @param current current saving goal entity
+     * @throws SavingGoalValidationException if target amount is less than current amount
      */
     private void validateUpdateRequest(UpdateSavingGoalRequest request, SavingGoal current) {
         if (request.getTargetAmount().compareTo(current.getCurrentAmount()) < 0) {
@@ -68,7 +54,7 @@ public class SavingGoalServiceImpl implements SavingGoalService {
     }
 
     /**
-     * Validates business rules for withdrawing.
+     * Validates that a withdrawal amount does not exceed the current saved amount.
      *
      * @param savingGoal the saving goal to withdraw from
      * @param amount     the amount to withdraw
@@ -81,8 +67,9 @@ public class SavingGoalServiceImpl implements SavingGoalService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SavingGoalDto> getAllSavingGoals() {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
 
         return savingGoalRepository.findByUserOrderByCreatedAtDesc(user)
                 .stream()
@@ -91,10 +78,11 @@ public class SavingGoalServiceImpl implements SavingGoalService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public SavingGoalDto getSavingGoalById(UUID id) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         SavingGoal savingGoal = savingGoalRepository.findByIdAndUser(id, user)
-                .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(() -> new EntityNotFoundException(SAVING_GOAL_NOT_FOUND));  // ✅ Use constant
 
         return savingGoalMapper.toDto(savingGoal);
     }
@@ -102,7 +90,7 @@ public class SavingGoalServiceImpl implements SavingGoalService {
     @Override
     @Transactional
     public SavingGoalDto createSavingGoal(CreateSavingGoalRequest request) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
 
         SavingGoal savingGoal = SavingGoal.builder()
                 .user(user)
@@ -124,9 +112,9 @@ public class SavingGoalServiceImpl implements SavingGoalService {
     @Override
     @Transactional
     public SavingGoalDto updateSavingGoal(UUID id, UpdateSavingGoalRequest request) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         SavingGoal savingGoal = savingGoalRepository.findByIdAndUser(id, user)
-                .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(() -> new EntityNotFoundException(SAVING_GOAL_NOT_FOUND));  // ✅ Use constant
 
         validateUpdateRequest(request, savingGoal);
 
@@ -145,9 +133,9 @@ public class SavingGoalServiceImpl implements SavingGoalService {
     @Override
     @Transactional
     public void deleteSavingGoal(UUID id) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         SavingGoal savingGoal = savingGoalRepository.findByIdAndUser(id, user)
-                .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(() -> new EntityNotFoundException(SAVING_GOAL_NOT_FOUND));  // ✅ Use constant
 
         savingGoalRepository.delete(savingGoal);
 
@@ -157,9 +145,9 @@ public class SavingGoalServiceImpl implements SavingGoalService {
     @Override
     @Transactional
     public SavingGoalDto addContribution(UUID id, GoalContributionRequest request) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         SavingGoal savingGoal = savingGoalRepository.findByIdAndUser(id, user)
-                .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(() -> new EntityNotFoundException(SAVING_GOAL_NOT_FOUND));  // ✅ Use constant
 
         GoalContribution contribution = GoalContribution.builder()
                 .savingGoal(savingGoal)
@@ -181,9 +169,9 @@ public class SavingGoalServiceImpl implements SavingGoalService {
     @Override
     @Transactional
     public SavingGoalDto withdrawContribution(UUID id, GoalContributionRequest request) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         SavingGoal savingGoal = savingGoalRepository.findByIdAndUser(id, user)
-                .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(() -> new EntityNotFoundException(SAVING_GOAL_NOT_FOUND));  // ✅ Use constant
 
         validateWithdrawal(savingGoal, request.getAmount());
 
@@ -205,11 +193,12 @@ public class SavingGoalServiceImpl implements SavingGoalService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<GoalContributionDto> getContributions(UUID savingGoalId) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
 
         SavingGoal savingGoal = savingGoalRepository.findByIdAndUser(savingGoalId, user)
-                .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(() -> new EntityNotFoundException(SAVING_GOAL_NOT_FOUND));  // ✅ Use constant
 
         return goalContributionRepository.findBySavingGoalOrderByCreatedAtDesc(savingGoal)
                 .stream()

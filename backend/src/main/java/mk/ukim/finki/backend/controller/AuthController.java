@@ -3,6 +3,7 @@ package mk.ukim.finki.backend.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.backend.model.dto.auth.AuthResponseDto;
+import mk.ukim.finki.backend.model.dto.auth.UserInfoDto;
 import mk.ukim.finki.backend.model.dto.auth.UserLoginDto;
 import mk.ukim.finki.backend.model.dto.auth.UserRegistrationDto;
 import mk.ukim.finki.backend.model.entity.User;
@@ -54,10 +55,27 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword())
             );
             String token = jwtTokenProvider.generateToken(dto.getEmail());
+            User user = userService.findByEmail(dto.getEmail());
 
-            return ResponseEntity.ok(new AuthResponseDto(token, jwtTokenProvider.getJwtExpirationInMs()));
+            return ResponseEntity.ok(new AuthResponseDto(
+                    token,
+                    jwtTokenProvider.getJwtExpirationInMs(),
+                    user.getEmail(),
+                    user.getRole().name()
+            ));
         } catch (AuthenticationException ex) {
-            return ResponseEntity.status(401).body("Invalid email or password");
+            return ResponseEntity.status(401).body("Invalid credentials");
         }
+    }
+
+    /**
+     * Returns the currently authenticated user's information.
+     *
+     * @return 200 OK with user email and role
+     */
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser() {
+        User user = userService.getCurrentUser();
+        return ResponseEntity.ok(new UserInfoDto(user.getEmail(), user.getRole().name()));
     }
 }

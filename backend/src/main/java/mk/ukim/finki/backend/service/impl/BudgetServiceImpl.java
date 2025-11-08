@@ -13,11 +13,8 @@ import mk.ukim.finki.backend.model.entity.Category;
 import mk.ukim.finki.backend.model.entity.User;
 import mk.ukim.finki.backend.repository.BudgetRepository;
 import mk.ukim.finki.backend.repository.CategoryRepository;
-import mk.ukim.finki.backend.repository.UserRepository;
 import mk.ukim.finki.backend.service.BudgetService;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import mk.ukim.finki.backend.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,22 +38,9 @@ import static mk.ukim.finki.backend.util.BudgetServiceMessages.*;
 public class BudgetServiceImpl implements BudgetService {
 
     private final BudgetRepository budgetRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final CategoryRepository categoryRepository;
     private final BudgetMapper budgetMapper;
-
-    /**
-     * Retrieves the currently authenticated user.
-     *
-     * @return the User entity
-     */
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException(email));
-    }
 
     /**
      * Retrieves a category by ID or throws an exception if not found.
@@ -126,8 +110,9 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BudgetDto> getAllBudgets() {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         archiveExpiredBudgets();
 
         return budgetRepository.findByUserOrderByStartDateDesc(user)
@@ -138,8 +123,9 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BudgetDto getBudgetById(UUID id) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
 
         Budget budget = budgetRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new EntityNotFoundException(BUDGET_NOT_FOUND));
@@ -150,7 +136,7 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     @Transactional
     public BudgetDto createBudget(CreateBudgetRequest request) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
 
         LocalDate startDate = request.getStartDate();
         LocalDate endDate = request.getEndDate();
@@ -180,7 +166,7 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     @Transactional
     public BudgetDto updateBudget(UUID id, UpdateBudgetRequest request) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
 
         Budget budget = budgetRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new EntityNotFoundException(BUDGET_NOT_FOUND));
@@ -210,7 +196,7 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     @Transactional
     public void deleteBudget(UUID id) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
 
         Budget budget = budgetRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new EntityNotFoundException(BUDGET_NOT_FOUND));
@@ -224,7 +210,7 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     @Transactional
     public void archiveExpiredBudgets() {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
 
         List<Budget> expired = budgetRepository.findByUserOrderByStartDateDesc(user)
                 .stream()
@@ -243,8 +229,9 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BudgetDto> getExpiredBudgets() {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         List<Budget> expiredBudgets = budgetRepository.findByUserAndArchivedTrueOrderByEndDateDesc(user);
 
         return expiredBudgets.stream()
@@ -256,9 +243,13 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     @Transactional
     public BudgetDto rolloverBudget(UUID budgetId) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         Budget oldBudget = budgetRepository.findByIdAndUser(budgetId, user)
                 .orElseThrow(() -> new EntityNotFoundException(BUDGET_NOT_FOUND));
+
+        if (oldBudget.getEndDate().isAfter(LocalDate.now())) {
+            throw new BudgetValidationException(BUDGET_ROLLOVER_ACTIVE);
+        }
 
         var period = calculateRolloverPeriod(oldBudget);
 

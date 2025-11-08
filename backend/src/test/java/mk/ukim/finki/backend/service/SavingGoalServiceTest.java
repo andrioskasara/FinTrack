@@ -11,7 +11,6 @@ import mk.ukim.finki.backend.model.entity.User;
 import mk.ukim.finki.backend.model.enums.GoalContributionType;
 import mk.ukim.finki.backend.repository.GoalContributionRepository;
 import mk.ukim.finki.backend.repository.SavingGoalRepository;
-import mk.ukim.finki.backend.repository.UserRepository;
 import mk.ukim.finki.backend.service.impl.SavingGoalServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,9 +18,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -30,7 +26,6 @@ import java.util.UUID;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,7 +38,7 @@ public class SavingGoalServiceTest {
     private GoalContributionRepository goalContributionRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Mock
     private SavingGoalMapper savingGoalMapper;
@@ -75,20 +70,7 @@ public class SavingGoalServiceTest {
                 .achieved(false)
                 .build();
 
-        mockAuthentication(user.getEmail());
-
-        when(userRepository.findByEmail(anyString()))
-                .thenReturn(Optional.of(user));
-    }
-
-    private void mockAuthentication(String email) {
-        Authentication auth = mock(Authentication.class);
-        when(auth.getName()).thenReturn(email);
-
-        SecurityContext securityContext = mock(SecurityContext.class);
-        when(securityContext.getAuthentication()).thenReturn(auth);
-
-        SecurityContextHolder.setContext(securityContext);
+        when(userService.getCurrentUser()).thenReturn(user);
     }
 
     @Test

@@ -10,16 +10,12 @@ import mk.ukim.finki.backend.model.entity.User;
 import mk.ukim.finki.backend.model.enums.CategoryType;
 import mk.ukim.finki.backend.repository.CategoryRepository;
 import mk.ukim.finki.backend.repository.ExpenseRepository;
-import mk.ukim.finki.backend.repository.UserRepository;
 import mk.ukim.finki.backend.service.impl.ExpenseServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -40,7 +36,7 @@ class ExpenseServiceTest {
     private ExpenseRepository expenseRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Mock
     private CategoryRepository categoryRepository;
@@ -67,10 +63,7 @@ class ExpenseServiceTest {
 
         expenseId = UUID.randomUUID();
 
-        mockAuthentication(user.getEmail());
-
-        when(userRepository.findByEmail(anyString()))
-                .thenReturn(Optional.of(user));
+        when(userService.getCurrentUser()).thenReturn(user);
 
         Category category = createCustomCategory(UUID.randomUUID());
         expense = createExpense(expenseId, user, category);
@@ -78,16 +71,6 @@ class ExpenseServiceTest {
                 .id(expenseId)
                 .amount(expense.getAmount())
                 .build();
-    }
-
-    private void mockAuthentication(String email) {
-        Authentication auth = mock(Authentication.class);
-        when(auth.getName()).thenReturn(email);
-
-        SecurityContext securityContext = mock(SecurityContext.class);
-        when(securityContext.getAuthentication()).thenReturn(auth);
-
-        SecurityContextHolder.setContext(securityContext);
     }
 
     private Expense createExpense(UUID id, User user, Category category) {

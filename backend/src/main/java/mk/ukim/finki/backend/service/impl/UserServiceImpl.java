@@ -7,6 +7,8 @@ import mk.ukim.finki.backend.model.entity.User;
 import mk.ukim.finki.backend.model.enums.UserRole;
 import mk.ukim.finki.backend.repository.UserRepository;
 import mk.ukim.finki.backend.service.UserService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -46,5 +48,24 @@ public class UserServiceImpl implements UserService {
                 .password(user.getPassword())
                 .roles(user.getRole().name())
                 .build();
+    }
+
+    @Override
+    public User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new UsernameNotFoundException("No authenticated user found");
+        }
+
+        String email = authentication.getName();
+        return findByEmail(email);
+    }
+
+    @Override
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
 }

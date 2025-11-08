@@ -82,6 +82,6 @@ public class AuthControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginDto)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(content().string("Invalid email or password"));
+                .andExpect(content().string("Invalid credentials"));
     }
 }
